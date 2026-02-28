@@ -1,0 +1,14 @@
+{
+  "model_name": "google/mobilebert-uncased",
+  "num_classes": 10,
+  "max_length": 128,
+  "epochs": 4,
+  "learning_rate": 5e-05,
+  "batch_size": 16,
+  "test_accuracy": 0.9253731343283582,
+  "test_f1_weighted": 0.9232385083131351,
+  "test_f1_macro": 0.9186039886039886,
+  "best_val_accuracy": 0.9402985074626866,
+  "avg_confidence": 0.8928728699684143,
+  "training_date": "2026-02-27 18:44:50"
+}

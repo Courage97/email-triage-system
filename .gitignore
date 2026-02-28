@@ -1,0 +1,13 @@
+# Ignore large model files
+   models/distilbert/*.bin
+   models/distilbert/*.safetensors
+   models/distilbert/pytorch_model.bin
+   models/distilbert/model.safetensors
+   
+   # Python cache
+   __pycache__/
+   *.pyc
+   .ipynb_checkpoints/
+   
+   # Local streamlit
+   .streamlit/

@@ -1,0 +1,12 @@
+{
+  "Admission Inquiry": 0,
+  "Complaints": 1,
+  "Course Registration": 2,
+  "Fees & Payment": 3,
+  "General Inquiry": 4,
+  "Hostel / Accommodation": 5,
+  "Meeting Requests": 6,
+  "Result / Grade Issues": 7,
+  "Staff Matters": 8,
+  "Transcript Requests": 9
+}
