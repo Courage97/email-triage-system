@@ -1,176 +1,109 @@
+import pathfix  # noqa
 # model/validator.py
-# Confidence threshold checks and alert logic
-# Depends on: config/constants.py
+# Confidence threshold checks, alert logic, and irrelevant detection
 
 from config.constants import (
     CONFIDENCE_HIGH,
     CONFIDENCE_MEDIUM,
+    IRRELEVANT_THRESHOLD,
     ROUTING_MAP,
     PRIORITY_CONFIG,
 )
 
 
-# ─── Confidence Level ─────────────────────────────────────────────────────────
-
 def get_confidence_level(confidence: float) -> dict:
-    """
-    Determine confidence level from a 0.0–1.0 score.
-
-    Args:
-        confidence: Float between 0.0 and 1.0
-
-    Returns:
-        dict with keys:
-            - level   (str)   'high' | 'medium' | 'low'
-            - label   (str)   human-readable label
-            - color   (str)   hex color
-            - icon    (str)   emoji indicator
-            - pct     (float) confidence as percentage 0–100
-    """
     pct = confidence * 100
-
     if pct >= CONFIDENCE_HIGH:
-        return {
-            'level': 'high',
-            'label': 'High Confidence',
-            'color': '#6495ed',
-            'icon':  '🟢',
-            'pct':   pct,
-        }
+        return {'level': 'high',   'label': 'High Confidence',
+                'color': '#10B981', 'icon': '🟢', 'pct': pct}
     elif pct >= CONFIDENCE_MEDIUM:
-        return {
-            'level': 'medium',
-            'label': 'Medium Confidence — Review Recommended',
-            'color': '#F59E0B',
-            'icon':  '🟡',
-            'pct':   pct,
-        }
+        return {'level': 'medium', 'label': 'Medium Confidence — Review Recommended',
+                'color': '#F59E0B', 'icon': '🟡', 'pct': pct}
     else:
-        return {
-            'level': 'low',
-            'label': 'Low Confidence — Manual Review Required',
-            'color': '#EF4444',
-            'icon':  '🔴',
-            'pct':   pct,
-        }
+        return {'level': 'low',    'label': 'Low Confidence — Manual Review Required',
+                'color': '#EF4444', 'icon': '🔴', 'pct': pct}
 
 
-# ─── Alert Logic ──────────────────────────────────────────────────────────────
+def is_irrelevant(confidence: float) -> bool:
+    """
+    Return True if the model's top confidence is below IRRELEVANT_THRESHOLD,
+    meaning the email is likely not meant for the registry.
+    """
+    return (confidence * 100) < IRRELEVANT_THRESHOLD
+
+
+def get_irrelevant_reason(confidence: float, category: str) -> str:
+    """Return a plain-English explanation of why the email is flagged irrelevant."""
+    pct = confidence * 100
+    return (
+        f"The model's best guess was **{category}** with only **{pct:.1f}%** confidence "
+        f"(threshold: {IRRELEVANT_THRESHOLD}%). This email does not appear to be "
+        f"intended for the registry. It has been flagged as **Irrelevant**."
+    )
+
 
 def should_alert(confidence: float) -> bool:
-    """
-    Return True if confidence is below the HIGH threshold,
-    meaning the email should be flagged for human review.
-
-    Args:
-        confidence: Float between 0.0 and 1.0
-
-    Returns:
-        bool
-    """
     return (confidence * 100) < CONFIDENCE_HIGH
 
 
 def get_alert_message(confidence: float, category: str) -> dict | None:
-    """
-    Build an alert message dict if confidence is below threshold.
-    Returns None if confidence is high (no alert needed).
-
-    Args:
-        confidence: Float between 0.0 and 1.0
-        category:   Predicted category string
-
-    Returns:
-        dict with keys: type, title, message
-        or None if no alert
-    """
     level = get_confidence_level(confidence)
-
     if level['level'] == 'high':
         return None
-
     if level['level'] == 'medium':
         return {
             'type':    'warning',
             'title':   '⚠️ Medium Confidence',
             'message': (
-                f"The model predicted **{category}** with "
-                f"**{level['pct']:.1f}%** confidence. "
-                f"Consider reviewing the classification before routing."
+                f"Predicted **{category}** with **{level['pct']:.1f}%** confidence. "
+                f"Consider reviewing before routing."
             ),
         }
-
-    # low
     return {
         'type':    'error',
-        'title':   '🔴 Low Confidence — Manual Review Required',
+        'title':   '🔴 Low Confidence',
         'message': (
-            f"The model predicted **{category}** with only "
-            f"**{level['pct']:.1f}%** confidence. "
-            f"Please manually verify the category before routing this email."
+            f"Predicted **{category}** with only **{level['pct']:.1f}%** confidence. "
+            f"Please manually verify before routing."
         ),
     }
 
 
-# ─── Priority Logic ───────────────────────────────────────────────────────────
-
 def get_priority(category: str) -> dict:
-    """
-    Get priority level for a given category from ROUTING_MAP.
-
-    Args:
-        category: Email category string
-
-    Returns:
-        dict from PRIORITY_CONFIG with keys: label, color, badge
-    """
     routing  = ROUTING_MAP.get(category, {})
     priority = routing.get('priority', 'normal')
-    return {
-        'key':   priority,
-        **PRIORITY_CONFIG.get(priority, PRIORITY_CONFIG['normal']),
-    }
+    return {'key': priority, **PRIORITY_CONFIG.get(priority, PRIORITY_CONFIG['normal'])}
 
 
 def is_urgent(category: str) -> bool:
-    """Return True if the category is marked as urgent priority."""
     return get_priority(category)['key'] == 'urgent'
 
 
 def is_high_priority(category: str) -> bool:
-    """Return True if the category is urgent or high priority."""
     return get_priority(category)['key'] in ('urgent', 'high')
 
 
-# ─── Validation Summary ───────────────────────────────────────────────────────
-
 def validate_result(result: dict) -> dict:
     """
-    Run all validation checks on a prediction result and return
-    a single validation summary dict used by the classify page.
-
-    Args:
-        result: Dict returned by predict_email()
-
-    Returns:
-        dict with keys:
-            - confidence_info  (dict)  from get_confidence_level()
-            - alert            (dict | None) from get_alert_message()
-            - priority         (dict)  from get_priority()
-            - needs_review     (bool)  True if confidence < HIGH threshold
-            - is_urgent        (bool)  True if category is urgent
+    Full validation — includes irrelevant detection.
+    Returns dict with: confidence_info, alert, priority,
+                       needs_review, is_urgent, is_irrelevant, irrelevant_reason
     """
     category   = result['category']
     confidence = result['confidence']
 
-    confidence_info = get_confidence_level(confidence)
-    alert           = get_alert_message(confidence, category)
-    priority        = get_priority(category)
+    confidence_info   = get_confidence_level(confidence)
+    alert             = get_alert_message(confidence, category)
+    priority          = get_priority(category)
+    irrelevant        = is_irrelevant(confidence)
+    irrelevant_reason = get_irrelevant_reason(confidence, category) if irrelevant else None
 
     return {
-        'confidence_info': confidence_info,
-        'alert':           alert,
-        'priority':        priority,
-        'needs_review':    should_alert(confidence),
-        'is_urgent':       is_urgent(category),
+        'confidence_info':   confidence_info,
+        'alert':             alert,
+        'priority':          priority,
+        'needs_review':      should_alert(confidence),
+        'is_urgent':         is_urgent(category),
+        'is_irrelevant':     irrelevant,
+        'irrelevant_reason': irrelevant_reason,
     }

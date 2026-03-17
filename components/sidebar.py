@@ -9,6 +9,7 @@ from utils.log_manager import load_log, get_log_summary
 PAGES = [
     {"key": "landing",   "label": "Home",          "icon": "🏠"},
     {"key": "classify",  "label": "Classify Email", "icon": "📧"},
+    {"key": "inbox",     "label": "Live Inbox",      "icon": "📬"},
     {"key": "log",       "label": "Email Log",      "icon": "📋"},
     {"key": "dashboard", "label": "Dashboard",      "icon": "📊"},
 ]

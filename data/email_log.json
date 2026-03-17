@@ -1,5 +1,37 @@
 [
   {
+    "id": "586F5821",
+    "timestamp": "2026-03-16 20:09:37",
+    "date": "2026-03-16",
+    "time": "20:09:37",
+    "subject": "2-Step Verification turned on",
+    "body_preview": "[image: Google]\r\n2-Step Verification turned on\r\n\r\n\r\noyewolebarnabas97@gmail.com\r\n\r\nYour Google Account oyewolebarnabas97...",
+    "category": "Irrelevant",
+    "confidence": 33.52,
+    "department": "Not Routed",
+    "priority": "high",
+    "elapsed_ms": "404",
+    "was_overridden": false,
+    "original_category": null,
+    "status": "routed"
+  },
+  {
+    "id": "E225DDC4",
+    "timestamp": "2026-03-16 20:08:20",
+    "date": "2026-03-16",
+    "time": "20:08:20",
+    "subject": "Negotiation and Alignment Techniques: How Great Leaders Turn\r\n Differences into Direction",
+    "body_preview": "Project Management\r\n\r\nBy Project Management\r\n\r\n\r\nBy Project Management\r\n\r\n    \r\n    \r\n    Read this article on LinkedIn ...",
+    "category": "Irrelevant",
+    "confidence": 32.85,
+    "department": "Not Routed",
+    "priority": "normal",
+    "elapsed_ms": "1737",
+    "was_overridden": false,
+    "original_category": null,
+    "status": "routed"
+  },
+  {
     "id": "EBF9EFD0",
     "timestamp": "2026-03-11 04:11:50",
     "date": "2026-03-11",

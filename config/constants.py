@@ -156,3 +156,28 @@ LOG_FILE_PATH = _os.path.join(
     "data",
     "email_log.json"
 )
+
+# ─── Irrelevant Detection ─────────────────────────────────────────────────────
+# If model's top confidence is below this threshold, email is flagged irrelevant
+IRRELEVANT_THRESHOLD   = 55      # % — below this = not meant for registry
+
+# ─── IMAP Configuration ───────────────────────────────────────────────────────
+# Common provider presets — user selects in the inbox page
+IMAP_PROVIDERS = {
+    "Gmail":               {"host": "imap.gmail.com",    "port": 993},
+    "Outlook / Hotmail":   {"host": "outlook.office365.com", "port": 993},
+    "Yahoo Mail":          {"host": "imap.mail.yahoo.com", "port": 993},
+    "Custom / Other":      {"host": "",                  "port": 993},
+}
+
+# Auto-refresh interval options (seconds)
+AUTOREFRESH_OPTIONS = {
+    "30 seconds":  30,
+    "1 minute":    60,
+    "2 minutes":   120,
+    "5 minutes":   300,
+    "Off":         0,
+}
+
+# Max emails to fetch per inbox pull
+INBOX_FETCH_LIMIT = 20
